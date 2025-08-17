@@ -103,7 +103,7 @@ cards[0].FlipCard(true);          // 0番目のカードを表にする
 
 このスクリプトでやってること
 このコードはまず createCards 関数で、指定されたマーク（SuitType）に応じて、対応するカードPrefabを複製して CardController 型のリスト ret を作り返す。
-その後、このリストを ShuffleCards 関数に渡すことで、同じカードが重複しないよう順番をランダムに並べ替える。
+その後、このリストを ShuffleCards 関数に渡すことで、同じカードが重複しないよう順番をランダムに並べ替え
 
 
 ShuffleCards関数に渡せてる？全部がうまいこと機能してるか疑問
