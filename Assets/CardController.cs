@@ -58,7 +58,7 @@ public class CardController : MonoBehaviour
         }
 
         isFrontUp = frontup;
-        transform.eulerAngles = new Vector3(0, 0, anglez);
+        transform.eulerAngles = new Vector3(0, anglez, 0);
 
     }
 }
