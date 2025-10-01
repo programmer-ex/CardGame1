@@ -17,12 +17,12 @@ public class MemorySceneDirector : MonoBehaviour
     int height = 4;
 
     //選んだカード
-    List<CardController> SelectCards;
+    List<CardController> selectCards;
     int selectCountMax = 2;
     //ゲーム終了フラグ
     bool isGameEnd;
     //経過時間
-    float fameTimer;
+    float gameTimer;
     //前回の秒数
     int oldSecond;
 
@@ -30,9 +30,11 @@ public class MemorySceneDirector : MonoBehaviour
     void Start()
     {
         //シャッフルされたカードを取得
-        cards = cardsDirector.GetMemoryCards();
+        cards = cardsDirector.GetMemoryCards();//他のスクリプトに参照でけへん
+
         //カード全体を真ん中にずらすためのオフセット
         Vector2 offset = new Vector2((width - 1) / 2.0f, (height - 1) / 2.0f);
+
         //カード枚数が足りない時、エラーを表示する
         if (cards.Count < width * height)
         {
@@ -48,6 +50,10 @@ public class MemorySceneDirector : MonoBehaviour
             cards[i].transform.position = new Vector3(x, 0, y);
             cards[i].FlipCard(false);
         }
+
+        //各種フラグ初期化
+        selectCards = new List<CardController>();
+        oldSecond = -1;
     }
 
     // Update is called once per frame
@@ -63,7 +69,8 @@ public class MemorySceneDirector : MonoBehaviour
         //マウスが離された時、音ゲーとかじゃない限り離された時に処理実行でOK
         if (Input.GetMouseButtonUp(0))
         {
-            //　TODO　3回目のタップ
+            //3回目のタップ
+            if (!canOpen()) return;
 
             // Rayを飛ばして当たり判定を取る　？
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
@@ -77,7 +84,7 @@ public class MemorySceneDirector : MonoBehaviour
                 //カードオープン
                 card.FlipCard();
                 //選択したカードを保存
-                selectCards.Add(cards);
+                selectCards.Add(card);
             }
         }
     }
@@ -85,9 +92,10 @@ public class MemorySceneDirector : MonoBehaviour
     string getTimerText(float timer)
     {
         //秒数を取得
-        int sec = (int)timer / 60;
+        int sec = (int)timer % 60;
         //前回と秒数が同じなら前回の表示値を返す
         string ret = textTimer.text;
+
         //前回と秒数に違いがあるか
         if (oldSecond != sec)
         {
@@ -102,6 +110,60 @@ public class MemorySceneDirector : MonoBehaviour
         }
 
         return ret;
+    }
+
+
+    //もう一枚捲れるかどうか
+    bool canOpen()//この（）はなんなん
+    {
+        //２枚揃っていない場合はカードをめくることができる
+        if (selectCards.Count < selectCountMax) return true;///これ満たさない時どんな時？
+
+        //2枚揃っている場合は選択したカードが同じ数字かチェック
+        bool equal = true;//初期値true
+        foreach (var item in selectCards)
+        {
+            //選択したカードを裏返しにする
+            item.FlipCard(false);
+
+            //同じ数字かどうかをチェック
+            if (item.No != selectCards[0].No)
+            {
+                equal = false;
+            }
+        }
+        //2つが同じ数字だったらカードを消す
+        if (equal)///条件になってなくない？equal=trueということか
+        {
+            //めくったカードを非表示
+            foreach (var item in selectCards)//foreachはそれぞれ毎回ってこと？
+            {
+                item.gameObject.SetActive(false);
+            }
+
+            //全部のカードが非表示になっていたらゲーム終了
+            isGameEnd = true;
+            foreach (var item in cards)
+            {
+                if (item.gameObject.activeSelf)//が、どうなってる時やねん
+                {
+                    isGameEnd = false;
+                    break;//breakってなんやっけ
+                }
+            }
+
+            //ゲームクリア秒数を表示
+            if (isGameEnd)
+            {
+                textTimer.text = "かっこいい！！" + getTimerText(gameTimer);
+            }
+        }    
+
+        //選択したカードをクリア
+        selectCards.Clear();
+
+        return false;
+
     }
 
 }
